@@ -15,104 +15,95 @@ jobs:
 
     steps:
     - name: Disable Firewall Profiles
-      shell: cmd
-      run: netsh advfirewall set allprofiles state off
+      run: |
+        netsh advfirewall set allprofiles state off
+        if errorlevel 1 echo Failed to disable firewall. Continuing...
 
     - name: Install Necessary Packages
-      shell: cmd
       run: |
         @echo off
         set maxRetries=3
-        set /a retryCount=0
-        :retry
-        if %retryCount% GEQ %maxRetries% (
-          echo Installation failed after multiple attempts.
-          exit /b 1
-        )
-        choco install chrome-remote-desktop-host -y --ignore-checksums || (
-          echo Retrying chrome-remote-desktop-host install...
-          set /a retryCount+=1
-          timeout /t 10
-          goto retry
-        )
         set retryCount=0
-        :retry2
-        if %retryCount% GEQ %maxRetries% (
-          echo Installation failed after multiple attempts.
-          exit /b 1
-        )
-        choco install googlechrome -y --ignore-checksums || (
-          echo Retrying googlechrome install...
+
+        :installChromeRemoteDesktop
+        choco install chrome-remote-desktop-host -y --ignore-checksums
+        if errorlevel 1 (
           set /a retryCount+=1
-          timeout /t 10
-          goto retry2
+          if %retryCount% LSS %maxRetries% (
+            echo Retrying chrome-remote-desktop-host install (%retryCount%/%maxRetries%)
+            timeout /t 10
+            goto installChromeRemoteDesktop
+          ) else (
+            echo chrome-remote-desktop-host failed to install after multiple attempts.
+            exit /b 1
+          )
+        )
+
+        set retryCount=0
+        :installGoogleChrome
+        choco install googlechrome -y --ignore-checksums
+        if errorlevel 1 (
+          set /a retryCount+=1
+          if %retryCount% LSS %maxRetries% (
+            echo Retrying googlechrome install (%retryCount%/%maxRetries%)
+            timeout /t 10
+            goto installGoogleChrome
+          ) else (
+            echo googlechrome failed to install after multiple attempts.
+            exit /b 1
+          )
         )
 
     - name: Set Wallpaper
-      shell: cmd
       run: |
-        @echo off
         set WallpaperUrl=https://i.ibb.co/7QBjY1q/20241214-020008.jpg
         set WallpaperPath=%USERPROFILE%\Documents\wallpaper.jpg
-        bitsadmin /transfer myDownloadJob %WallpaperUrl% %WallpaperPath%
+        curl -o "%WallpaperPath%" "%WallpaperUrl%"
         reg add "HKCU\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "%WallpaperPath%" /f
-        rundll32.exe user32.dll, UpdatePerUserSystemParameters
+        rundll32.exe user32.dll,UpdatePerUserSystemParameters
 
     - name: Download and Extract Free Fire Ripper
-      shell: cmd
       continue-on-error: true
       run: |
-        @echo off
-        cd %USERPROFILE%\Documents
-        bitsadmin /transfer myDownloadJob https://drive.usercontent.google.com/download?id=11EUFz6hufNT1g56-CmOJw9_KxMERZxhe&export=download ffripper.zip
-        7z x ffripper.zip -y || (
+        cd "%USERPROFILE%\Documents"
+        curl -o ffripper.zip "https://drive.usercontent.google.com/download?id=11EUFz6hufNT1g56-CmOJw9_KxMERZxhe&export=download"
+        7z x ffripper.zip -y
+        if errorlevel 1 (
           echo Download or extraction failed.
           exit /b 1
         )
 
     - name: Start Chrome Remote Desktop
-      shell: cmd
+      continue-on-error: true
       run: |
         @echo off
-        echo "Running CMD script..."
-        echo AuthCode: %CODE%
-        echo Pin: 444444
-        
-        REM Ensure the auth code is passed correctly
-        if "%CODE%"=="" (
-          echo Error: Auth code is missing!
-          exit /b 1
+        set paths="%ProgramFiles(x86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe" "%ProgramFiles%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
+        for %%p in (%paths%) do (
+          if exist %%p (
+            start "" %%p
+            goto :eof
+          )
         )
-        
-        REM Define path for the executable
-        set chromeRemoteDesktopPath=%ProgramFiles(x86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe
-        
-        REM Start the Chrome Remote Desktop tool
-        echo Starting Chrome Remote Desktop...
-        if exist "%chromeRemoteDesktopPath%" (
-          echo Found remoting_start_host.exe. Starting the remote desktop...
-          "%chromeRemoteDesktopPath%" --code="%CODE%" --pin=444444 --redirect-url="https://remotedesktop.google.com/_/oauthredirect"
-        ) else (
-          echo Error: Chrome Remote Desktop's remoting_start_host.exe not found at "%chromeRemoteDesktopPath%"
-          exit /b 1
-        )
+        echo Chrome Remote Desktop's remoting_start_host.exe not found.
 
     - name: Create Symbolic Links
-      shell: cmd
       run: |
-        @echo off
         mklink "%USERPROFILE%\Desktop\Free Fire.lnk" "%USERPROFILE%\Documents\FenixGaga\Engine\ProjectTitan.exe"
         mklink "%USERPROFILE%\Desktop\Ninjaripper.lnk" "%USERPROFILE%\Documents\ninjaripper\x86\NinjaRipper.exe"
         mklink "%USERPROFILE%\Desktop\Noesis.lnk" "%USERPROFILE%\Documents\noesis\Noesis64.exe"
 
+    - name: Start Remote Desktop Session
+      continue-on-error: true
+      run: |
+        echo Connecting to VM with Remote Desktop
+        echo %{{ inputs.code }} --pin=444444
+
     - name: Keep Connection Active
-      shell: cmd
       run: |
         @echo off
-        set /a i=43800
-        :loop
-        if %i% LEQ 0 exit /b 0
-        echo %i%
+        set /a minutes=43800
+        :keepAlive
+        echo %minutes% minutes remaining
         timeout /t 60
-        set /a i-=1
-        goto loop
+        set /a minutes-=1
+        if %minutes% GTR 0 goto keepAlive
