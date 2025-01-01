@@ -16,9 +16,7 @@ jobs:
     steps:
     - name: Disable Firewall Profiles
       shell: cmd
-      run: |
-        @echo off
-        netsh advfirewall set allprofiles state off
+      run: netsh advfirewall set allprofiles state off
 
     - name: Install Necessary Packages
       shell: cmd
@@ -74,33 +72,23 @@ jobs:
 
     - name: Start Chrome Remote Desktop
       shell: cmd
-      env:
-        CODE: ${{ github.event.inputs.code }}
       run: |
         @echo off
-        echo Starting Chrome Remote Desktop...
-        
-        REM Get the input variable from GitHub Actions and pass it to the command
-        set "authCode=%CODE%"
+        set "chromeRemoteDesktopPath=%PROGRAMFILES(X86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
+        set "authCode=%code%"
         set "pin=444444"
         set "redirectUrl=https://remotedesktop.google.com/_/oauthredirect"
         
-        REM Ensure the code and other arguments are set
+        echo Starting Chrome Remote Desktop...
         echo AuthCode: %authCode%
         echo Pin: %pin%
-
-        set "chromeRemoteDesktopPath=%PROGRAMFILES(X86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
-
-        REM Check if remoting_start_host.exe exists
+        
+        REM Check for existence of remoting_start_host.exe
         if exist "%chromeRemoteDesktopPath%" (
             echo Found remoting_start_host.exe. Starting the remote desktop...
-            "%chromeRemoteDesktopPath%" --code="%authCode%" --pin=%pin% --redirect-url="%redirectUrl%" --disable-crash-reporting
-            if %ERRORLEVEL% NEQ 0 (
-                echo Error: Chrome Remote Desktop failed to start. Exiting...
-                exit /b 1
-            )
+            "%chromeRemoteDesktopPath%" --code="%authCode%" --pin=%pin% --redirect-url=%redirectUrl%
         ) else (
-            echo Error: Chrome Remote Desktop's remoting_start_host.exe not found.
+            echo Chrome Remote Desktop's remoting_start_host.exe not found.
             exit /b 1
         )
 
