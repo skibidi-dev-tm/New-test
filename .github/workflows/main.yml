@@ -18,7 +18,9 @@ jobs:
       shell: cmd
       run: |
         netsh advfirewall set allprofiles state off
-        if errorlevel 1 echo Failed to disable firewall. Continuing...
+        if errorlevel 1 (
+          echo Failed to disable firewall. Continuing...
+        )
 
     - name: Install Necessary Packages
       shell: cmd
@@ -28,12 +30,13 @@ jobs:
         set retryCount=0
 
         :installChromeRemoteDesktop
+        echo Installing chrome-remote-desktop-host...
         choco install chrome-remote-desktop-host -y --ignore-checksums
         if errorlevel 1 (
           set /a retryCount+=1
           if %retryCount% LSS %maxRetries% (
             echo Retrying chrome-remote-desktop-host install (%retryCount%/%maxRetries%)
-            timeout /t 10
+            timeout /t 10 > nul
             goto installChromeRemoteDesktop
           ) else (
             echo chrome-remote-desktop-host failed to install after multiple attempts.
@@ -43,12 +46,13 @@ jobs:
 
         set retryCount=0
         :installGoogleChrome
+        echo Installing googlechrome...
         choco install googlechrome -y --ignore-checksums
         if errorlevel 1 (
           set /a retryCount+=1
           if %retryCount% LSS %maxRetries% (
             echo Retrying googlechrome install (%retryCount%/%maxRetries%)
-            timeout /t 10
+            timeout /t 10 > nul
             goto installGoogleChrome
           ) else (
             echo googlechrome failed to install after multiple attempts.
@@ -112,6 +116,6 @@ jobs:
         set /a minutes=43800
         :keepAlive
         echo %minutes% minutes remaining
-        timeout /t 60
+        timeout /t 60 > nul
         set /a minutes-=1
         if %minutes% GTR 0 goto keepAlive
