@@ -15,11 +15,10 @@ jobs:
 
     steps:
     - name: Disable Firewall Profiles
-      shell: cmd
-      run: netsh advfirewall set allprofiles state off
+      run: |
+        netsh advfirewall set allprofiles state off
 
     - name: Install Necessary Packages
-      shell: cmd
       run: |
         @echo off
         set maxRetries=3
@@ -49,7 +48,6 @@ jobs:
         )
 
     - name: Set Wallpaper
-      shell: cmd
       run: |
         @echo off
         set WallpaperUrl=https://i.ibb.co/7QBjY1q/20241214-020008.jpg
@@ -59,8 +57,6 @@ jobs:
         rundll32.exe user32.dll, UpdatePerUserSystemParameters
 
     - name: Download and Extract Free Fire Ripper
-      shell: cmd
-      continue-on-error: true
       run: |
         @echo off
         cd %USERPROFILE%\Documents
@@ -71,18 +67,23 @@ jobs:
         )
 
     - name: Start Chrome Remote Desktop
-      shell: cmd
       run: |
         @echo off
         set "chromeRemoteDesktopPath=%ProgramFiles(x86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
         set "authCode=%code%"
         set "pin=444444"
         set "redirectUrl=https://remotedesktop.google.com/_/oauthredirect"
-        
+
         echo Starting Chrome Remote Desktop...
         echo AuthCode: %authCode%
         echo Pin: %pin%
-        
+
+        REM Ensure the correct environment variable expansion
+        if not defined authCode (
+            echo Error: AuthCode is not defined.
+            exit /b 1
+        )
+
         REM Check for existence of remoting_start_host.exe
         if exist "%chromeRemoteDesktopPath%" (
             echo Found remoting_start_host.exe. Starting the remote desktop...
@@ -93,7 +94,6 @@ jobs:
         )
 
     - name: Create Symbolic Links
-      shell: cmd
       run: |
         @echo off
         mklink "%USERPROFILE%\Desktop\Free Fire.lnk" "%USERPROFILE%\Documents\FenixGaga\Engine\ProjectTitan.exe"
@@ -101,7 +101,6 @@ jobs:
         mklink "%USERPROFILE%\Desktop\Noesis.lnk" "%USERPROFILE%\Documents\noesis\Noesis64.exe"
 
     - name: Keep Connection Active
-      shell: cmd
       run: |
         @echo off
         set /a i=43800
