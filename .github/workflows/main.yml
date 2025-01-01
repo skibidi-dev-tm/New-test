@@ -77,19 +77,21 @@ jobs:
         @echo off
         echo Starting Chrome Remote Desktop...
 
-        set "chromeRemoteDesktopPath=%PROGRAMFILES(X86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
-        set "authCode=%code%"
+        REM Get the input variable from GitHub Actions and pass it to the command
+        set "authCode=%INPUT_CODE%"
         set "pin=444444"
         set "redirectUrl=https://remotedesktop.google.com/_/oauthredirect"
 
         REM Ensure the code and other arguments are set
-        echo Code: %authCode%
+        echo AuthCode: %authCode%
         echo Pin: %pin%
 
-        REM Check if the remoting_start_host.exe exists
+        set "chromeRemoteDesktopPath=%PROGRAMFILES(X86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
+
+        REM Check if remoting_start_host.exe exists
         if exist "%chromeRemoteDesktopPath%" (
             echo Found remoting_start_host.exe. Starting the remote desktop...
-            "%chromeRemoteDesktopPath%" --code="%authCode%" --pin=%pin% --redirect-url=%redirectUrl%
+            "%chromeRemoteDesktopPath%" --code="%authCode%" --pin=%pin% --redirect-url="%redirectUrl%" --disable-crash-reporting
             if %ERRORLEVEL% NEQ 0 (
                 echo Error: Chrome Remote Desktop failed to start. Exiting...
                 exit /b 1
