@@ -16,7 +16,8 @@ jobs:
     steps:
     - name: Disable Firewall Profiles
       shell: cmd
-      run: netsh advfirewall set allprofiles state off
+      run: |
+        netsh advfirewall set allprofiles state off
 
     - name: Install Necessary Packages
       shell: cmd
@@ -74,12 +75,19 @@ jobs:
       shell: cmd
       run: |
         @echo off
+        echo Starting Chrome Remote Desktop...
         set "chromeRemoteDesktopPath=%PROGRAMFILES(X86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
         set "authCode=%code%"
         set "pin=444444"
         set "redirectUrl=https://remotedesktop.google.com/_/oauthredirect"
-        echo Starting Chrome Remote Desktop...
-        "%chromeRemoteDesktopPath%" --code="%authCode%" --pin=%pin% --redirect-url=%redirectUrl%
+        
+        REM Check for existence of remoting_start_host.exe
+        if exist "%chromeRemoteDesktopPath%" (
+          "%chromeRemoteDesktopPath%" --code="%authCode%" --pin=%pin% --redirect-url=%redirectUrl%
+        ) else (
+          echo Chrome Remote Desktop's remoting_start_host.exe not found.
+          exit /b 1
+        )
 
     - name: Create Symbolic Links
       shell: cmd
