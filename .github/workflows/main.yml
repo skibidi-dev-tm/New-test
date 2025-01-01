@@ -74,7 +74,9 @@ jobs:
       shell: cmd
       run: |
         @echo off
-        "%PROGRAMFILES(X86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe" --code="%{{ inputs.code }}" --pin=444444
+        "%PROGRAMFILES(X86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe" --code="%code%" --pin=444444
+      env:
+        code: ${{ inputs.code }}
 
     - name: Create Symbolic Links
       shell: cmd
