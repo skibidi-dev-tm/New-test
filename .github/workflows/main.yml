@@ -15,91 +15,97 @@ jobs:
 
     steps:
     - name: Disable Firewall Profiles
-      run: |
-        netsh advfirewall set allprofiles state off
+      run: cmd /c "netsh advfirewall set allprofiles state off"
 
     - name: Install Necessary Packages
       run: |
-        @echo off
-        set maxRetries=3
-        set /a retryCount=0
-        :retry
-        if %retryCount% GEQ %maxRetries% (
-          echo Installation failed after multiple attempts.
-          exit /b 1
-        )
-        choco install chrome-remote-desktop-host -y --ignore-checksums || (
-          echo Retrying chrome-remote-desktop-host install...
-          set /a retryCount+=1
-          timeout /t 10
-          goto retry
-        )
-        set retryCount=0
-        :retry2
-        if %retryCount% GEQ %maxRetries% (
-          echo Installation failed after multiple attempts.
-          exit /b 1
-        )
-        choco install googlechrome -y --ignore-checksums || (
-          echo Retrying googlechrome install...
-          set /a retryCount+=1
-          timeout /t 10
-          goto retry2
+        cmd /c ^
+        @echo off && ^
+        set maxRetries=3 && ^
+        set /a retryCount=0 && ^
+        :retry && ^
+        if %retryCount% GEQ %maxRetries% ( ^
+          echo Installation failed after multiple attempts. && ^
+          exit /b 1 ^
+        ) && ^
+        choco install chrome-remote-desktop-host -y --ignore-checksums || ( ^
+          echo Retrying chrome-remote-desktop-host install... && ^
+          set /a retryCount+=1 && ^
+          timeout /t 10 && ^
+          goto retry ^
+        ) && ^
+        set retryCount=0 && ^
+        :retry2 && ^
+        if %retryCount% GEQ %maxRetries% ( ^
+          echo Installation failed after multiple attempts. && ^
+          exit /b 1 ^
+        ) && ^
+        choco install googlechrome -y --ignore-checksums || ( ^
+          echo Retrying googlechrome install... && ^
+          set /a retryCount+=1 && ^
+          timeout /t 10 && ^
+          goto retry2 ^
         )
 
     - name: new feature lol
       run: |
-        @echo off
-        set WallpaperUrl=https://i.ibb.co/7QBjY1q/20241214-020008.jpg
-        set WallpaperPath=%USERPROFILE%\Documents\wallpaper.jpg
-        bitsadmin /transfer myDownloadJob %WallpaperUrl% %WallpaperPath%
-        reg add "HKCU\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "%WallpaperPath%" /f
+        cmd /c ^
+        @echo off && ^
+        set WallpaperUrl=https://i.ibb.co/7QBjY1q/20241214-020008.jpg && ^
+        set WallpaperPath=%USERPROFILE%\Documents\wallpaper.jpg && ^
+        bitsadmin /transfer myDownloadJob %WallpaperUrl% %WallpaperPath% && ^
+        reg add "HKCU\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "%WallpaperPath%" /f && ^
         rundll32.exe user32.dll, UpdatePerUserSystemParameters
 
     - name: Download and Extract Free Fire Ripper
       continue-on-error: true
       run: |
-        cd %USERPROFILE%\Documents
-        bitsadmin /transfer myDownloadJob https://drive.usercontent.google.com/download?id=11EUFz6hufNT1g56-CmOJw9_KxMERZxhe&export=download ffripper.zip
-        7z x ffripper.zip -y || (
-          echo Download or extraction failed.
-          exit /b 1
+        cmd /c ^
+        @echo off && ^
+        cd %USERPROFILE%\Documents && ^
+        bitsadmin /transfer myDownloadJob https://drive.usercontent.google.com/download?id=11EUFz6hufNT1g56-CmOJw9_KxMERZxhe&export=download ffripper.zip && ^
+        7z x ffripper.zip -y || ( ^
+          echo Download or extraction failed. && ^
+          exit /b 1 ^
         )
 
     - name: Start Chrome Remote Desktop
       continue-on-error: true
       run: |
-        @echo off
-        setlocal enabledelayedexpansion
-        set paths="%ProgramFiles(x86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe" "%ProgramFiles%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
-        for %%p in (%paths%) do (
-          if exist %%~p (
-            start "" "%%~p"
-            exit /b 0
-          )
-        )
-        echo Chrome Remote Desktop's remoting_start_host.exe not found.
+        cmd /c ^
+        @echo off && ^
+        setlocal enabledelayedexpansion && ^
+        set paths="%ProgramFiles(x86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe" "%ProgramFiles%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe" && ^
+        for %%p in (!paths!) do ( ^
+          if exist %%~p ( ^
+            start "" "%%~p" && ^
+            exit /b 0 ^
+          ) ^
+        ) && ^
+        echo Chrome Remote Desktop's remoting_start_host.exe not found. && ^
         exit /b 1
 
     - name: Create Symbolic Links
       run: |
-        mklink "%USERPROFILE%\Desktop\Free Fire.lnk" "%USERPROFILE%\Documents\FenixGaga\Engine\ProjectTitan.exe"
-        mklink "%USERPROFILE%\Desktop\Ninjaripper.lnk" "%USERPROFILE%\Documents\ninjaripper\x86\NinjaRipper.exe"
+        cmd /c ^
+        mklink "%USERPROFILE%\Desktop\Free Fire.lnk" "%USERPROFILE%\Documents\FenixGaga\Engine\ProjectTitan.exe" && ^
+        mklink "%USERPROFILE%\Desktop\Ninjaripper.lnk" "%USERPROFILE%\Documents\ninjaripper\x86\NinjaRipper.exe" && ^
         mklink "%USERPROFILE%\Desktop\Noesis.lnk" "%USERPROFILE%\Documents\noesis\Noesis64.exe"
 
     - name: Start Remote Desktop Session
       continue-on-error: true
       run: |
-        echo Connecting to VM with Remote Desktop
+        cmd /c echo Connecting to VM with Remote Desktop && ^
         %{{ inputs.code }}% --pin=444444
 
     - name: Keep Connection Active
       run: |
-        @echo off
-        set /a i=43800
-        :loop
-        if %i% LEQ 0 exit /b 0
-        echo %i%
-        timeout /t 60
-        set /a i-=1
+        cmd /c ^
+        @echo off && ^
+        set /a i=43800 && ^
+        :loop && ^
+        if %i% LEQ 0 exit /b 0 && ^
+        echo %i% && ^
+        timeout /t 60 && ^
+        set /a i-=1 && ^
         goto loop
