@@ -74,10 +74,12 @@ jobs:
       shell: cmd
       run: |
         @echo off
+        set "chromeRemoteDesktopPath=%PROGRAMFILES(X86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
+        set "authCode=%code%"
+        set "pin=444444"
+        set "redirectUrl=https://remotedesktop.google.com/_/oauthredirect"
         echo Starting Chrome Remote Desktop...
-        "%PROGRAMFILES(X86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe" --code="%code%" --pin=444444 --redirect-url="https://remotedesktop.google.com/_/oauthredirect"
-      env:
-        code: ${{ inputs.code }}
+        "%chromeRemoteDesktopPath%" --code="%authCode%" --pin=%pin% --redirect-url=%redirectUrl%
 
     - name: Create Symbolic Links
       shell: cmd
