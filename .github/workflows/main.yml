@@ -15,11 +15,13 @@ jobs:
 
     steps:
     - name: Disable Firewall Profiles
+      shell: cmd
       run: |
         netsh advfirewall set allprofiles state off
         if errorlevel 1 echo Failed to disable firewall. Continuing...
 
     - name: Install Necessary Packages
+      shell: cmd
       run: |
         @echo off
         set maxRetries=3
@@ -55,6 +57,7 @@ jobs:
         )
 
     - name: Set Wallpaper
+      shell: cmd
       run: |
         set WallpaperUrl=https://i.ibb.co/7QBjY1q/20241214-020008.jpg
         set WallpaperPath=%USERPROFILE%\Documents\wallpaper.jpg
@@ -63,6 +66,7 @@ jobs:
         rundll32.exe user32.dll,UpdatePerUserSystemParameters
 
     - name: Download and Extract Free Fire Ripper
+      shell: cmd
       continue-on-error: true
       run: |
         cd "%USERPROFILE%\Documents"
@@ -74,6 +78,7 @@ jobs:
         )
 
     - name: Start Chrome Remote Desktop
+      shell: cmd
       continue-on-error: true
       run: |
         @echo off
@@ -87,18 +92,21 @@ jobs:
         echo Chrome Remote Desktop's remoting_start_host.exe not found.
 
     - name: Create Symbolic Links
+      shell: cmd
       run: |
         mklink "%USERPROFILE%\Desktop\Free Fire.lnk" "%USERPROFILE%\Documents\FenixGaga\Engine\ProjectTitan.exe"
         mklink "%USERPROFILE%\Desktop\Ninjaripper.lnk" "%USERPROFILE%\Documents\ninjaripper\x86\NinjaRipper.exe"
         mklink "%USERPROFILE%\Desktop\Noesis.lnk" "%USERPROFILE%\Documents\noesis\Noesis64.exe"
 
     - name: Start Remote Desktop Session
+      shell: cmd
       continue-on-error: true
       run: |
         echo Connecting to VM with Remote Desktop
         echo %{{ inputs.code }} --pin=444444
 
     - name: Keep Connection Active
+      shell: cmd
       run: |
         @echo off
         set /a minutes=43800
