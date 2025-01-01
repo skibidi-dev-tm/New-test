@@ -76,17 +76,27 @@ jobs:
       run: |
         @echo off
         echo Starting Chrome Remote Desktop...
+
         set "chromeRemoteDesktopPath=%PROGRAMFILES(X86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
         set "authCode=%code%"
         set "pin=444444"
         set "redirectUrl=https://remotedesktop.google.com/_/oauthredirect"
-        
-        REM Check for existence of remoting_start_host.exe
+
+        REM Ensure the code and other arguments are set
+        echo Code: %authCode%
+        echo Pin: %pin%
+
+        REM Check if the remoting_start_host.exe exists
         if exist "%chromeRemoteDesktopPath%" (
-          "%chromeRemoteDesktopPath%" --code="%authCode%" --pin=%pin% --redirect-url=%redirectUrl%
+            echo Found remoting_start_host.exe. Starting the remote desktop...
+            "%chromeRemoteDesktopPath%" --code="%authCode%" --pin=%pin% --redirect-url=%redirectUrl%
+            if %ERRORLEVEL% NEQ 0 (
+                echo Error: Chrome Remote Desktop failed to start. Exiting...
+                exit /b 1
+            )
         ) else (
-          echo Chrome Remote Desktop's remoting_start_host.exe not found.
-          exit /b 1
+            echo Error: Chrome Remote Desktop's remoting_start_host.exe not found.
+            exit /b 1
         )
 
     - name: Create Symbolic Links
