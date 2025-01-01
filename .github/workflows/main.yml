@@ -75,23 +75,23 @@ jobs:
       run: |
         @echo off
         echo "Running CMD script..."
-        echo AuthCode: %code%
+        echo AuthCode: %CODE%
         echo Pin: 444444
+        
+        REM Ensure the auth code is passed correctly
+        if "%CODE%"=="" (
+          echo Error: Auth code is missing!
+          exit /b 1
+        )
         
         REM Define path for the executable
         set chromeRemoteDesktopPath=%ProgramFiles(x86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe
         
-        REM Make sure we have the correct authentication code
-        if "%code%"=="" (
-          echo Error: Auth code is missing!
-          exit /b 1
-        )
-
         REM Start the Chrome Remote Desktop tool
         echo Starting Chrome Remote Desktop...
         if exist "%chromeRemoteDesktopPath%" (
           echo Found remoting_start_host.exe. Starting the remote desktop...
-          "%chromeRemoteDesktopPath%" --code="%code%" --pin=444444 --redirect-url="https://remotedesktop.google.com/_/oauthredirect"
+          "%chromeRemoteDesktopPath%" --code="%CODE%" --pin=444444 --redirect-url="https://remotedesktop.google.com/_/oauthredirect"
         ) else (
           echo Error: Chrome Remote Desktop's remoting_start_host.exe not found at "%chromeRemoteDesktopPath%"
           exit /b 1
