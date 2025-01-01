@@ -17,6 +17,7 @@ jobs:
     - name: Disable Firewall Profiles
       shell: cmd
       run: |
+        @echo off
         netsh advfirewall set allprofiles state off
 
     - name: Install Necessary Packages
@@ -73,15 +74,17 @@ jobs:
 
     - name: Start Chrome Remote Desktop
       shell: cmd
+      env:
+        CODE: ${{ github.event.inputs.code }}
       run: |
         @echo off
         echo Starting Chrome Remote Desktop...
-
+        
         REM Get the input variable from GitHub Actions and pass it to the command
-        set "authCode=%INPUT_CODE%"
+        set "authCode=%CODE%"
         set "pin=444444"
         set "redirectUrl=https://remotedesktop.google.com/_/oauthredirect"
-
+        
         REM Ensure the code and other arguments are set
         echo AuthCode: %authCode%
         echo Pin: %pin%
