@@ -74,7 +74,7 @@ jobs:
       shell: cmd
       run: |
         @echo off
-        set "chromeRemoteDesktopPath=%PROGRAMFILES(X86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
+        set "chromeRemoteDesktopPath=%ProgramFiles(x86)%\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
         set "authCode=%code%"
         set "pin=444444"
         set "redirectUrl=https://remotedesktop.google.com/_/oauthredirect"
